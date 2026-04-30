@@ -1,0 +1,11 @@
+{
+  "name": "mcpdiff",
+  "version": "0.1.0",
+  "private": true,
+  "bin": {
+    "mcpdiff": "cli.js"
+  },
+  "scripts": {
+    "benchmark": "node cli.js benchmark fixtures/v1.tools.json fixtures/v2-noisy.tools.json fixtures/v2-renamed.tools.json fixtures/v2-tightened.tools.json fixtures/v2-removed.tools.json"
+  }
+}

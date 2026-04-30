@@ -1,0 +1,11 @@
+# MCPDiff Policy
+
+- baseline: v1.tools.json
+- candidate: v2-renamed.tools.json
+- removed tools: 0 (budget inf)
+- required arg additions: 0 (budget inf)
+- renamed tools: 1
+- verdict: FAIL
+
+## Failures
+- renamed tools 1 detected while --no-silent-renames is enabled

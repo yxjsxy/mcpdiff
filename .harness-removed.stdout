@@ -1,0 +1,11 @@
+# MCPDiff Policy
+
+- baseline: v1.tools.json
+- candidate: v2-removed.tools.json
+- removed tools: 1 (budget 0)
+- required arg additions: 0 (budget inf)
+- renamed tools: 0
+- verdict: FAIL
+
+## Failures
+- removed tools 1 exceeds budget 0

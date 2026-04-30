@@ -1,0 +1,11 @@
+{
+  "server": "acme-agent-tools",
+  "tools": [
+    {"description": "Search internal docs  ", "name": "search_docs", "args": [{"required": true, "type": "string", "name": "query"}]},
+    {"description": "Open support ticket", "name": "open_ticket", "args": [{"required": false, "type": "string", "name": "priority"}, {"required": true, "type": "string", "name": "title"}]},
+    {"description": "Read repository files", "name": "read_repo", "args": [{"required": true, "type": "string", "name": "path"}]},
+    {"description": "Write repository files", "name": "write_repo", "args": [{"required": true, "type": "string", "name": "content"}, {"required": true, "type": "string", "name": "path"}]},
+    {"description": "Send Slack update", "name": "send_slack", "args": [{"required": true, "type": "string", "name": "message"}, {"required": true, "type": "string", "name": "channel"}]},
+    {"description": "Run readonly SQL query", "name": "run_sql", "args": [{"required": true, "type": "string", "name": "query"}]}
+  ]
+}

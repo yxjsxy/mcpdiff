@@ -1,0 +1,11 @@
+# MCPDiff Policy
+
+- baseline: v1.tools.json
+- candidate: v2-noisy.tools.json
+- removed tools: 0 (budget 0)
+- required arg additions: 0 (budget 0)
+- renamed tools: 0
+- verdict: PASS
+
+## Takeaway
+- Candidate manifest stays inside the configured compatibility budget.
