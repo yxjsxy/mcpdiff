@@ -1,18 +1,6 @@
 # MCPDiff
 
-MCPDiff tells you whether a tool-manifest change is harmless noise or a rollout-breaking compatibility drift.
-
-Git diff is great at showing lines. It is much worse at answering the question agent teams actually care about before they redeploy an MCP server or tool bundle:
-
-**Did this manifest change remove a tool, silently tighten a schema, or rename something in a way that will break downstream callers?**
-
-MCPDiff is a zero-dependency CLI for that preflight check.
-
-## Why this should exist
-
-The MCP ecosystem is moving fast. Teams are publishing more tool manifests, more generated JSON, and more server-to-server contracts. Existing platforms such as Langfuse or LangSmith help once traces exist. Generic Git diff helps once a human sits down and reads the patch.
-
-What is still missing is a tiny, local compatibility lens that answers whether a manifest is safe to roll out before the first failed run happens.
+Compare two tool-manifest snapshots before rolling out a change. MCPDiff separates formatting noise from removed tools, likely renames, and newly required arguments.
 
 ## What it does
 
@@ -23,24 +11,15 @@ What is still missing is a tiny, local compatibility lens that answers whether a
 - enforces compatibility budgets in CI with a policy command
 - records benchmark and ablation results for review
 
-## Positioning and baseline
+## Requirements
 
-Baseline workflows today:
-- raw Git diff over JSON manifests
-- manual review of server export snapshots
-- tracing and observability platforms after deployment
-
-Adjacent community projects:
-- Langfuse and LangSmith show tool usage after runs happen
-- MCP server frameworks help expose tools, but do not classify compatibility drift between manifest versions
-- generic JSON diff libraries show structure changes, but not rollout semantics
-
-MCPDiff sits one step earlier. It is a manifest compatibility preflight CLI.
+Node.js 18 or newer and Git. These commands use Node built-ins; no hosted service or API key is needed.
 
 ## Quick start
 
 ```bash
-cd ~/Documents/vibe_coding/mcpdiff
+git clone https://github.com/yxjsxy/mcpdiff.git
+cd mcpdiff
 node cli.js snapshot fixtures/v1.tools.json
 node cli.js diff fixtures/v1.tools.json fixtures/v2-noisy.tools.json
 node cli.js diff fixtures/v1.tools.json fixtures/v2-renamed.tools.json
@@ -51,51 +30,13 @@ node cli.js benchmark fixtures/v1.tools.json fixtures/v2-noisy.tools.json fixtur
 node cli.js ablate fixtures/v1.tools.json fixtures/v2-renamed.tools.json
 ```
 
-## How to verify
+## Use your own data
 
-```bash
-bash ~/.openclaw/workspace/scripts/coding_harness.sh gates/mcpdiff-mvp.sh 3
-bash ~/.openclaw/workspace/scripts/coding_harness.sh gates/feature-rename-detect.sh 3
-bash ~/.openclaw/workspace/scripts/coding_harness.sh gates/feature-noisy-no-op.sh 3
-```
+Inputs are JSON objects with a `tools` array. Each tool uses `name`, `description`, and an `args` array with `name`, `type`, and `required` fields. This is the repository’s simplified snapshot format, not an arbitrary live MCP server response. See `fixtures/v1.tools.json` before converting your manifest.
 
-## Experiments and comparison
+## Read the results
 
-### Baseline comparison
-
-Against raw JSON diffs, MCPDiff collapses four common review cases into explicit counters:
-- `v2-noisy.tools.json`: noise-only formatting churn, should not block rollout
-- `v2-renamed.tools.json`: semantic rename of `send_slack` to `post_slack`
-- `v2-tightened.tools.json`: one new required argument added to `open_ticket`
-- `v2-removed.tools.json`: `write_repo` removed entirely
-
-### Bundled benchmark results
-
-- noise-only: removed=0, renamed=0, required-arg-additions=0, noise-only=yes
-- rename: removed=0, renamed=1, required-arg-additions=0, noise-only=no
-- tightened-schema: removed=0, renamed=0, required-arg-additions=1, noise-only=no
-- removed-tool: removed=1, renamed=0, required-arg-additions=0, noise-only=no
-
-### Ablation
-
-Rename detection matters. Without rename-aware matching, the rename fixture looks like one removal plus one addition. With rename-aware matching, it becomes the correct story: one rename and no removals.
-
-See `docs/experiments.md` for the full setup, commands, results, and limits.
-
-## Architecture
-
-- `cli.js`: snapshot, diff, policy, benchmark, and ablation commands
-- `fixtures/`: baseline and changed tool-manifest snapshots
-- `docs/experiments.md`: benchmark and ablation record
-- `gates/`: formal harness verification
-
-## Open-source angle
-
-The story is simple and easy to share:
-
-**We have good tooling for traces after failure, but we still lack a clean compatibility diff for MCP tool manifests before rollout.**
-
-That makes MCPDiff useful for agent teams, MCP server authors, and platform engineers reviewing manifest changes in pull requests.
+`snapshot` lists normalized tools; `diff` explains contract changes; `policy` enforces the chosen compatibility budgets. Policy failure exits with code **2**, allowing CI to stop a rollout. Rename detection is heuristic: review a suggested rename rather than treating it as proof of compatibility.
 
 ## Limitations
 
@@ -104,9 +45,6 @@ That makes MCPDiff useful for agent teams, MCP server authors, and platform engi
 - no live adapters for MCP registry exports or OpenAPI-derived tool bundles yet
 - no PR comment formatter yet
 
-## Roadmap
+## Examples and evaluation
 
-- adapters for popular MCP server export shapes
-- PR summary output for GitHub Actions
-- alias maps for intentional renames
-- richer schema-change severity grading
+The bundled `fixtures/` provide reproducible examples. See [experiment notes](docs/experiments.md) for the historical benchmark setup and its limits; those fixture results are not guarantees for other inputs.
